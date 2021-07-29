@@ -9,13 +9,14 @@ import { BanUserDto } from './dto/ban-user.dto';
 
 @Injectable()
 export class UsersService {
-
-  constructor(@InjectModel(User) private userRepository: typeof User, private roleService: RolesService) {
-  }
+  constructor(
+    @InjectModel(User) private userRepository: typeof User,
+    private roleService: RolesService,
+  ) {}
 
   async createUser(dto: CreateUserDto) {
     const user = await this.userRepository.create(dto);
-    const role = await this.roleService.getRoleByValue('USER');
+    const role = await this.roleService.getRoleByValue('ADMIN');
     await user.$set('roles', [role.id]);
     user.roles = [role];
     return user;
@@ -26,7 +27,10 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email }, include: { all: true } });
+    return await this.userRepository.findOne({
+      where: { email },
+      include: { all: true },
+    });
   }
 
   async addRole(dto: AddRoleDto) {
@@ -36,7 +40,10 @@ export class UsersService {
       await user.$add('role', role.id);
       return dto;
     }
-    throw new HttpException('Пользователь или роль не найдены', HttpStatus.NOT_FOUND);
+    throw new HttpException(
+      'Пользователь или роль не найдены',
+      HttpStatus.NOT_FOUND,
+    );
   }
 
   async ban(dto: BanUserDto) {
